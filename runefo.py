@@ -26,7 +26,7 @@ if __name__ == '__main__':
 	playerInput = input("Enter player name and press enter: ").strip().replace(" ", "%20")
 	while playerInput != "":
 		try:
-			print("Looking up player...")
+			print("Retrieving player info...")
 			Hiscores(playerInput)
 		except:
 			print("Player not found")
@@ -40,6 +40,7 @@ if __name__ == '__main__':
 		playerInput = input("Enter another player name (or just enter to continue): ").strip().replace(" ", "%20")
 
 	scrape()
+	recurseReqs()
 
 	questLevels = {}
 	with open('quests.json') as json_file:
@@ -51,17 +52,24 @@ if __name__ == '__main__':
 				reqsDict[req[0].split()[1].lower()] = int(req[0].split()[0])
 			questLevels[quest['name']] = reqsDict
 
-	eligibleQuests = []
-	for key, value in questLevels.items():
-		eligibleQuests.append(key)
-		for k, v in questLevels[key].items():
-			for p in playerList:
-				if questLevels[key][k] > p.getLevels(k):
-					eligibleQuests.pop()
-					break
+	try:
+		eligibleQuests = []
+		for key, value in questLevels.items():
+			eligibleQuests.append(key)
+			for k, v in questLevels[key].items():
+				for p in playerList:
+					if questLevels[key][k] > p.getLevels(k):
+						eligibleQuests.pop()
+						break
+	except:
+		time.sleep(3)
+		print("Player too n00by")
+		time.sleep(1)
+		sys.exit()
 
 
 	print("Your player(s) meet the level requirements for the following quests: ")
+	time.sleep(1)
 	for quest in eligibleQuests:
 		print("-->  " + quest)
 		time.sleep(0.05)

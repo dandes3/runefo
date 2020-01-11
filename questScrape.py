@@ -1,6 +1,8 @@
 from lxml import html
 import requests
+import time
 import json
+import re
 
 class Quest:
     def __init__(self, quest_name,quest_points, quest_length, member_required,quest_url,requirements,id):
@@ -68,6 +70,28 @@ def scrape():
         
     print("\nDone!")
 
+def recurseReqs():
+    print("Recursing list to include skill requirements for child quests in parent quests...")
+    
+    with open('quests.json', 'r+') as json_file:
+        questLibrary = json.load(json_file)
+        for quest in questLibrary:
+            questQuestReqs = re.findall('((Completion of the following quests:)((\s+)('+'|'.join([d['name'] for d in questLibrary]) + '))+)',quest['requirements'], re.IGNORECASE)
+            if questQuestReqs:
+                questQuestReqsClean = '\n'.join([x for x in questQuestReqs[0][0].replace('Completion of the following quests:', '').strip().splitlines() if x.strip()]).split('\n')
+                for req in questQuestReqsClean:
+                    reqsToReplaceWith = [d['requirements'] for d in questLibrary if d['name'].lower().strip() == req.lower().strip()]
+                    quest['requirements'] = quest['requirements'].replace(req, req + " --> " + '\n'.join(reqsToReplaceWith))
+        json_file.seek(0)
+        json.dump(questLibrary, json_file)
+        json_file.truncate()
+
+    time.sleep(3)
+    print("\nDone!")
+
 if __name__ == '__main__':
     scrape()
+    recurseReqs()
+
+
 
